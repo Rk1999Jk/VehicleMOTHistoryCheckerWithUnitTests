@@ -1,0 +1,44 @@
+﻿@using VechicleInfo.Services
+@using VechicleInfo.Data
+@page "/"
+@inject IVehicleService VehicleService
+@inject NavigationManager NavigationManager
+
+    <h3>Vehicle MOT History Checker</h3>
+    
+    <div class="form-container">
+        <div class="nameplate-image">
+        
+        </div>
+
+
+        <EditForm Model="@vehicleRequest" OnValidSubmit="@GetVehicleInfo">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                
+                <label for="registrationNumber" class="RegNumLabel">Registration Number:</label>
+            <div class="registration-NumberTextBox">
+                <InputText id="registrationNumber" class="form-control" @bind-Value="vehicleRequest.RegistrationNumber" />
+                <ValidationMessage For="@(() => vehicleRequest.RegistrationNumber)" />
+            </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Check MOT History</button>
+        </EditForm>
+
+        
+
+        @code {
+            private VehicleRequest vehicleRequest = new VehicleRequest();
+            private VehicleInformation vehicleInfo;
+
+            private async Task GetVehicleInfo()
+            {
+                //Redirecting to next page to display Vehicle Details
+                var url = $"vehicledetails?registration={vehicleRequest.RegistrationNumber}";
+                NavigationManager.NavigateTo(url);
+                
+            }
+        }
+    </div>
+

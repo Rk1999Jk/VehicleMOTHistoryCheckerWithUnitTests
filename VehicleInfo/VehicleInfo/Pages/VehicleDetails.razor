@@ -1,0 +1,96 @@
+﻿@page "/vehicledetails"
+@using Microsoft.AspNetCore.WebUtilities
+@using VechicleInfo.Services
+@using VechicleInfo.Data
+
+@inject IVehicleService VehicleService
+@inject NavigationManager NavigationManager
+
+@code {
+    private VehicleInformation vehicleInfo;
+    private string registrationNumber="";
+    private int daysUntilMotExpiry;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("registration", out var reg))
+        {
+            registrationNumber = reg;
+            vehicleInfo = await VehicleService.GetVehicleInfo(registrationNumber);
+        }
+
+        //Calculating Number of days left to renew MOT
+        if (DateTime.TryParse(vehicleInfo.MotExpiryDate, out DateTime expiryDate))
+        {
+            var today = DateTime.Today;
+            daysUntilMotExpiry =(expiryDate - today).Days;
+        }
+        else
+        {
+            // Handle invalid date format
+            daysUntilMotExpiry = -1;
+        }
+    }
+
+}
+<h3>Vehicle Information</h3>
+<div class="form-container">
+    
+@if (vehicleInfo != null)
+{
+    <div class="yellow-nameplate">
+        <p>@registrationNumber</p>
+    </div>
+        <table>
+            <tr>
+                <th><strong>Attribute</strong></th>
+                <th><strong>Value</strong></th>
+            </tr>
+            <tr>
+                <td><strong>Make</strong></td>
+                <td>@vehicleInfo.Make</td>
+            </tr>
+            <tr>
+                <td><strong>Model</strong></td>
+                <td>@vehicleInfo.Model</td>
+            </tr>
+            <tr>
+                <td><strong>Colour</strong></td>
+                <td>@vehicleInfo.Colour</td>
+            </tr>
+            <tr>
+                <td><strong>MOT Expiry Date</strong></td>
+                <td>@vehicleInfo.MotExpiryDate</td>
+            </tr>
+            <tr>
+                <td><strong>Mileage at Last MOT</strong></td>
+                <td>@vehicleInfo.MileageAtLastMot</td>
+            </tr>
+        </table>
+        if(@daysUntilMotExpiry>0)
+        {
+            <p>You still have @daysUntilMotExpiry days to renew MOT</p>
+        }
+        else
+        {
+            <p style="color:red;">Your vehicle MOT has expired</p>
+        }
+        
+
+    
+}
+else
+{
+    <div class="not-found">
+
+    </div>
+        <p style="color:red;"><strong>Please Enter a Valid Registration Number</strong></p>
+}
+    
+    <NavLink href="/" style="color:dodgerblue;">
+        Check another vehicle
+    </NavLink>
+    
+</div>
